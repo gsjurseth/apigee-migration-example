@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/gsjurseth/monster-examples#readme",
   "dependencies": {
+    "commander": "^7.0.0",
     "recursive-copy": "^2.0.11",
     "replace": "^1.2.0"
   }

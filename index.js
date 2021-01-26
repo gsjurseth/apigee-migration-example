@@ -2,19 +2,28 @@
 
 const path    = require('path'),
       copy    = require('recursive-copy'),
-      replace = require('replace');
+      replace = require('replace'),
+      cmd     = require('commander');
+
+cmd
+  .requiredOption('-n, --name <name>', 'name of the new proxy')
+  .requiredOption('-f, --file <swagger>', 'path to the swagger file')
+  .option('-h, --host <host>', 'host for the target')
+  .option('-s, --scheme <scheme>', 'http or https [defaults to https]')
+  .parse();
 
 
-let file = process.argv[2];
-let name = process.argv[3];
+let file = cmd.opts().file; //process.argv[2];
+let name = cmd.opts().name; //process.argv[3];
 
 const pFile = require(path.resolve(file));
 
 // set our intial vars
 let paths = [];
-let scheme = pFile.scheme || 'https';
-let host = pFile.host;
+let scheme = pFile.scheme || cmd.opts().scheme;
+let host = pFile.host || cmd.opts().host;
 let basepath = pFile.basePath;
+let dir = path.dirname(process.argv[1]);
 
 let length = 0;
 let cmpPath = '';
@@ -33,18 +42,15 @@ Object.keys(pFile.paths).forEach( p => {
 // the paths looking for the common denominators
 //let cpath = '';
 let cpath = [];
-console.log('The split stuff: %j', cmpPath.split('/'));
 cmpPath.split('/').slice(1).every( k => {
-  console.log('this is k: %s', k);
   let pathTest = Object.keys(pFile.paths).every( p => {
     //let matchPath = `${cpath}/${k}`;
     let matchPath =  '/' + cpath.concat(k).join('/');//`${cpath}/${k}`;
-    console.log('checking if %s matches %s', matchPath, p);
     if (p.startsWith(matchPath)) {
       return true;
     }
     else {
-      console.log("didn't match");
+      console.log("didn't match on: %s", matchPath);
       return false;
     }
   });
@@ -54,7 +60,6 @@ cmpPath.split('/').slice(1).every( k => {
     return true;
   }
   else {
-    console.log("No, pathTest wasn't true: %j", pathTest);
     return false;
   }
 })
@@ -66,17 +71,17 @@ console.log('proposed target url: %s', `${scheme}://${host}/${cpath.join('/')}`)
 
 let target = `${scheme}://${host}/${cpath.join('/')}`;
 
-copy('./proxy-template',name)
+copy(`${dir}/proxy-template`,name)
   .then( x => {
     replace({
       regex: "@@BASEPATH@@",
       replacement: '/' + cpath.join('/'),
-      paths: [ `./${name}/apiproxy/proxies/default.xml` ]
+      paths: [ `${dir}/${name}/apiproxy/proxies/default.xml` ]
     });
     replace({
       regex: "@@TARGET@@",
       replacement: target,
-      paths: [ `./${name}/apiproxy/targets/default.xml` ]
+      paths: [ `${dir}/${name}/apiproxy/targets/default.xml` ]
     })
   })
   .catch( e => {
