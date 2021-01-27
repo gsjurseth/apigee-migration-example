@@ -13,8 +13,8 @@ cmd
   .parse();
 
 
-let file = cmd.opts().file; //process.argv[2];
-let name = cmd.opts().name; //process.argv[3];
+let file = cmd.opts().file;
+let name = cmd.opts().name;
 
 const pFile = require(path.resolve(file));
 
@@ -40,11 +40,9 @@ Object.keys(pFile.paths).forEach( p => {
 
 // Next we look at the longest one, split up the path elements and traverse all
 // the paths looking for the common denominators
-//let cpath = '';
 let cpath = [];
 cmpPath.split('/').slice(1).every( k => {
   let pathTest = Object.keys(pFile.paths).every( p => {
-    //let matchPath = `${cpath}/${k}`;
     let matchPath =  '/' + cpath.concat(k).join('/');//`${cpath}/${k}`;
     if (p.startsWith(matchPath)) {
       return true;
@@ -56,7 +54,6 @@ cmpPath.split('/').slice(1).every( k => {
   });
   if (pathTest) {
     cpath = cpath.concat(k)
-    //cpath = [cpath.split('/'),k].join();
     return true;
   }
   else {
